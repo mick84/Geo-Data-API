@@ -7,6 +7,7 @@ export type Country = {
   flag: URL;
   population: number;
   cityNames?: string[];
+  code: string;
 };
 export type FetchedContinent = {
   name: string;
@@ -15,11 +16,11 @@ export type FetchedContinent = {
 export type AppState = {
   fetchedContinents: FetchedContinent[];
   currentContinent?: FetchedContinent;
-  currentCountry?: Country;
+  currentCountry: Country | null;
   mode: string;
   chart?: Chart;
 };
-export type ChartInput = {
+export type ContinentChartInput = {
   names: string[]; //country names array,
   areas: number[]; //country areas array
   populations: number[]; //country populations array
