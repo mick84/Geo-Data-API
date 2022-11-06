@@ -19,6 +19,9 @@ export type AppState = {
   currentCountry: Country | null;
   mode: string;
   chart?: Chart;
+  setMode(mode: string): void;
+  toggleError(errorMessage?: string): void;
+  hideSpinner(mode: boolean): void;
 };
 export type ContinentChartInput = {
   names: string[]; //country names array,

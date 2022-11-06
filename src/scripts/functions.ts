@@ -1,45 +1,48 @@
 import axios from "axios";
 import { ContinentChart, countryChart } from "./chart";
+import { countriesMenu, errorContainer, spinner } from "./DOM";
 import {
   AppState,
-  CityData,
   ContinentChartInput,
   Country,
   FetchedContinent,
 } from "./types";
-export const countriesMenu = document.getElementById(
-  "country-buttons"
-)! as HTMLDivElement;
-//axios.get("https://restcountries.com/v2/region/europe").then(console.log);
+
 export const getContinentData = async (state: AppState, e: any) => {
   const { target: btn } = e;
   if (btn.tagName !== "BUTTON") return;
-  state.mode = "continent";
-  const continent = state.fetchedContinents.find(
-    (cont) => cont.name === btn.dataset.continent
-  );
-  if (!continent) {
-    state.currentContinent = await fetchContinentData(btn.dataset.continent);
-    state.fetchedContinents.push(state.currentContinent!);
-  } else {
-    state.currentContinent = continent;
+  state.hideSpinner(false);
+  state.setMode("continent");
+  try {
+    const continent = state.fetchedContinents.find(
+      (cont) => cont.name === btn.dataset.continent
+    );
+    if (!continent) {
+      state.currentContinent = await fetchContinentData(btn.dataset.continent);
+      state.fetchedContinents.push(state.currentContinent!);
+    } else {
+      state.currentContinent = continent;
+    }
+    countriesMenu.replaceChildren("");
+    const chartInput: ContinentChartInput = {
+      names: [],
+      areas: [],
+      populations: [],
+    };
+    for (const country of state.currentContinent.countries) {
+      chartInput.names.push(country.name);
+      chartInput.areas.push(country.area);
+      chartInput.populations.push(country.population);
+      const btn = makeCountryButton(country);
+      countriesMenu.appendChild(btn);
+    }
+    state.chart?.destroy();
+    state.chart = ContinentChart(chartInput);
+    state.hideSpinner(true);
+    state.toggleError();
+  } catch (error) {
+    state.toggleError(error);
   }
-  state.chart?.destroy();
-  const chartInput: ContinentChartInput = {
-    names: [],
-    areas: [],
-    populations: [],
-  };
-  countriesMenu.replaceChildren("");
-  for (const country of state.currentContinent.countries) {
-    chartInput.names.push(country.name);
-    chartInput.areas.push(country.area);
-    chartInput.populations.push(country.population);
-    const btn = makeCountryButton(country);
-    countriesMenu.appendChild(btn);
-  }
-  state.chart = ContinentChart(chartInput);
-  console.log(state);
 };
 function makeCountryButton(country: Country) {
   const el = document.createElement("button");
@@ -52,11 +55,12 @@ function makeCountryButton(country: Country) {
 }
 const fetchContinentData = async (name: string): Promise<FetchedContinent> => {
   try {
+    state.toggleError();
     const regObj = await axios.get(
       `https://restcountries.com/v2/region/${name}`
     );
     const countriesFull: any[] = regObj.data;
-    console.log(countriesFull);
+    //console.log(countriesFull);
     const countries: Country[] = countriesFull.map((country) => ({
       name: country.name,
       area: country.area,
@@ -75,16 +79,21 @@ export const getCountryData = async (state: AppState, e: any) => {
   const { target } = e;
   const btn = target.closest("button");
   if (!btn) return;
-  state.mode = "country";
+  state.setMode("country");
+
   try {
     const cityRes = await axios.post(
       `https://countriesnow.space/api/v0.1/countries/cities`,
       { country: btn.dataset.country }
     );
+
     if (cityRes.status !== 200) {
-      throw new Error(cityRes.statusText);
+      throw new Error(
+        `${btn.dataset.country} can not be found in Countries & Cities API!`
+      );
     }
     const cityNames = cityRes.data.data;
+    state.hideSpinner(false);
     const settled = await Promise.allSettled(
       cityNames.map((city: string) =>
         axios.post(
@@ -98,6 +107,7 @@ export const getCountryData = async (state: AppState, e: any) => {
       throw new Error("No cities to show!");
     }
     console.clear();
+
     const sortedData = results.map((r) => ({
       city: r["value"].data.data.city,
       records: r["value"].data.data.populationCounts
@@ -107,14 +117,32 @@ export const getCountryData = async (state: AppState, e: any) => {
         }))
         .sort((a, b) => a.year - b.year),
     }));
+
     state.chart?.destroy();
     state.chart = countryChart(sortedData);
+    state.toggleError();
   } catch (error) {
-    console.error(error.message);
+    state.chart?.destroy();
+    state.toggleError(error.message);
   }
+  state.hideSpinner(true);
 };
+
 export const state: AppState = {
   fetchedContinents: [],
   currentCountry: null,
   mode: "",
+  setMode(mode: string) {
+    state.mode = mode;
+    document.getElementById("mode")!.innerText = mode;
+  },
+  hideSpinner(mode: boolean = true) {
+    mode
+      ? spinner.setAttribute("hidden", `true`)
+      : spinner.removeAttribute("hidden");
+  },
+  toggleError(errorMessage?: string) {
+    errorContainer.innerText = errorMessage ?? "";
+    errorContainer.hidden = !errorMessage;
+  },
 };

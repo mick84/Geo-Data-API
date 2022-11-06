@@ -1,14 +1,8 @@
 import Chart from "chart.js/auto";
 import randomColor from "randomcolor";
+import { ctx } from "./DOM";
 import { CityData, ContinentChartInput } from "./types";
 
-/*
-
- fetched country object from state.fetchedContinents[indexof currentContName]:
-{name: 'Åland Islands', area: 1580, capital: 'Mariehamn', flag: 'https://flagcdn.com/w320/ax.png', population: 28875}
-*/
-
-const ctx = document.getElementById("myChart") as HTMLCanvasElement;
 export const ContinentChart = (input: ContinentChartInput) =>
   new Chart(ctx, {
     type: "bar",
@@ -54,35 +48,15 @@ export const countryChart = (inputs: CityData[]) => {
       backgroundColor: color,
       borderColor: color,
     });
-
     const years = input.records.map((r) => r.year);
     dateArr.push(...years);
   }
-  const dates = [...new Set(dateArr)].sort();
+  const dates = [...new Set(dateArr.sort())];
   return new Chart(ctx, {
-    type: "line",
-
+    type: "bar",
     data: {
       labels: dates,
       datasets: sets,
-      /*
-       labels: input.names,
-      datasets: [
-        {
-          label: "Area (km^2)",//must be year
-          data: inputs.areas,
-          backgroundColor: "green",
-          borderColor: "gray",
-          borderWidth: 2,
-        },
-        {
-          label: "Population",
-          data: input.populations,
-          backgroundColor: "blue",
-          borderColor: "lightblue",
-          borderWidth: 2,
-        },
-      ],*/
     },
   });
 };

@@ -9,7 +9,9 @@
     <script defer src="./scripts/script.ts" type="module"></script>
   </head>
   <body>
-    <h1>World population</h1>
+    <div id="spinner" hidden><div></div></div>
+
+    <h1><span id="mode">World</span> population</h1>
     <div id="continent-buttons">
       <button class="continent-button" data-continent="africa">Africa</button
       ><button class="continent-button" data-continent="americas">
@@ -20,7 +22,10 @@
         Oceania
       </button>
     </div>
+
+    <div id="error-container" hidden></div>
     <canvas id="myChart" height="90"></canvas>
+
     <div id="country-buttons"></div>
   </body>
 </html>
