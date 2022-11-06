@@ -53,7 +53,7 @@ export const countryChart = (inputs: CityData[]) => {
   }
   const dates = [...new Set(dateArr.sort())];
   return new Chart(ctx, {
-    type: "bar",
+    type: "line",
     data: {
       labels: dates,
       datasets: sets,
