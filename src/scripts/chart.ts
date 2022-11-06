@@ -62,6 +62,7 @@ export const countryChart = (inputs: CityData[]) => {
       scales: {
         y: {
           beginAtZero: true,
+          min: 0,
         },
       },
     },
