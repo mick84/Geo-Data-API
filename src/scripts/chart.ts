@@ -58,5 +58,12 @@ export const countryChart = (inputs: CityData[]) => {
       labels: dates,
       datasets: sets,
     },
+    options: {
+      scales: {
+        y: {
+          beginAtZero: true,
+        },
+      },
+    },
   });
 };
