@@ -1,6 +1,6 @@
 import Chart from "chart.js/auto";
 import randomColor from "randomcolor";
-import { ContinentChartInput } from "./types";
+import { CityData, ContinentChartInput } from "./types";
 
 /*
 
@@ -32,22 +32,57 @@ export const ContinentChart = (input: ContinentChartInput) =>
       ],
     },
   });
-type CityChartInput = {
-  city: string;
-  records: { year: number; value: number }[];
-};
-export const countryChart = (inputs: CityChartInput[]) => {
-  const years = [
-    ...new Set(inputs.flatMap((i) => i.records.map((w) => w.year))),
-  ].sort((a, b) => a - b);
-  console.log(years);
 
-  /*
-  return  new Chart(ctx, {
+export const countryChart = (inputs: CityData[]) => {
+  /*[{city:"city0",records:[{year,value},...{year,value}]},...{city:"cityN",records:[{year,value},...{year,value}]}]*/
+  //const  newlabels=inputs.map((el, i) => el.city);
+  const labs: string[] = [];
+  const sets: {
+    label: string;
+    data: number[];
+    backgroundColor: string;
+    borderColor: string;
+  }[] = [];
+  const dateArr: number[] = [];
+  //make dateline:
+  for (const input of inputs) {
+    labs.push(input.city);
+    const color = randomColor();
+    sets.push({
+      label: input.city,
+      data: input.records.map((r) => r.value),
+      backgroundColor: color,
+      borderColor: color,
+    });
+
+    const years = input.records.map((r) => r.year);
+    dateArr.push(...years);
+  }
+  const dates = [...new Set(dateArr)].sort();
+  return new Chart(ctx, {
     type: "line",
+
     data: {
-      labels: inputs.map((i) => i.records.map((r) => r.year)),
-      datasets: [],
+      labels: dates,
+      datasets: sets,
+      /*
+       labels: input.names,
+      datasets: [
+        {
+          label: "Area (km^2)",//must be year
+          data: inputs.areas,
+          backgroundColor: "green",
+          borderColor: "gray",
+          borderWidth: 2,
+        },
+        {
+          label: "Population",
+          data: input.populations,
+          backgroundColor: "blue",
+          borderColor: "lightblue",
+          borderWidth: 2,
+        },
+      ],*/
     },
-  });*/
+  });
 };

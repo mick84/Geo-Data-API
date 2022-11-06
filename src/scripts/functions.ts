@@ -2,6 +2,7 @@ import axios from "axios";
 import { ContinentChart, countryChart } from "./chart";
 import {
   AppState,
+  CityData,
   ContinentChartInput,
   Country,
   FetchedContinent,
@@ -75,23 +76,20 @@ export const getCountryData = async (state: AppState, e: any) => {
   const btn = target.closest("button");
   if (!btn) return;
   state.mode = "country";
-  console.log(btn);
   try {
     const cityRes = await axios.post(
       `https://countriesnow.space/api/v0.1/countries/cities`,
       { country: btn.dataset.country }
     );
-    console.log(cityRes);
-
     if (cityRes.status !== 200) {
       throw new Error(cityRes.statusText);
     }
     const cityNames = cityRes.data.data;
     const settled = await Promise.allSettled(
-      cityNames.map((ct: string) =>
+      cityNames.map((city: string) =>
         axios.post(
           `https://countriesnow.space/api/v0.1/countries/population/cities`,
-          { city: ct }
+          { city }
         )
       )
     );
@@ -100,30 +98,23 @@ export const getCountryData = async (state: AppState, e: any) => {
       throw new Error("No cities to show!");
     }
     console.clear();
-    const map = results.map((r) => ({
+    const sortedData = results.map((r) => ({
       city: r["value"].data.data.city,
       records: r["value"].data.data.populationCounts
         .map((rec: { year: string; value: string }) => ({
           year: +rec.year,
           value: +rec.value,
         }))
-        .sort((a: any, b: any) => a.year - b.year),
+        .sort((a, b) => a.year - b.year),
     }));
-    console.log(map);
     state.chart?.destroy();
-    state.chart = countryChart(map);
+    state.chart = countryChart(sortedData);
   } catch (error) {
     console.error(error.message);
   }
-  //50 first city names:
 };
 export const state: AppState = {
   fetchedContinents: [],
   currentCountry: null,
   mode: "",
 };
-/*
-
- fetched country object from state.fetchedContinents[indexof currentContName]:
-{name: 'Åland Islands', area: 1580, capital: 'Mariehamn', flag: 'https://flagcdn.com/w320/ax.png', population: 28875}
-*/

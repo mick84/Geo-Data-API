@@ -25,3 +25,7 @@ export type ContinentChartInput = {
   areas: number[]; //country areas array
   populations: number[]; //country populations array
 };
+export type CityData = {
+  city: string;
+  records: { year: number; value: number }[];
+};
